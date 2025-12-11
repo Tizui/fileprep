@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-12-11
+
+### Changed
+- Migrated from `github.com/nao1215/filesql/parser` to `github.com/nao1215/fileparser` for file parsing
+- Updated all internal references from `parser.` to `fileparser.`
+
+### Removed
+- Dependency on `github.com/nao1215/filesql`
+
 ## [0.2.0] - 2025-12-08
 
 ### Added
