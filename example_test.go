@@ -239,7 +239,7 @@ func Example_detectFileType() {
 
 	for _, f := range files {
 		ft := fileprep.DetectFileType(f)
-		fmt.Printf("%s -> %s (compressed: %v)\n", f, ft, ft.IsCompressed())
+		fmt.Printf("%s -> %s (compressed: %v)\n", f, ft, fileprep.IsCompressed(ft))
 	}
 
 	// Output:

@@ -8,21 +8,23 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/nao1215/fileparser"
 )
 
 // Processor handles preprocessing and validation of file data
 type Processor struct {
-	fileType FileType
+	fileType fileparser.FileType
 }
 
 // NewProcessor creates a new Processor for the specified file type.
 //
 // Example:
 //
-//	processor := fileprep.NewProcessor(fileprep.FileTypeCSV)
+//	processor := fileprep.NewProcessor(fileparser.CSV)
 //	var records []MyRecord
 //	reader, result, err := processor.Process(input, &records)
-func NewProcessor(fileType FileType) *Processor {
+func NewProcessor(fileType fileparser.FileType) *Processor {
 	return &Processor{
 		fileType: fileType,
 	}
@@ -41,7 +43,7 @@ func NewProcessor(fileType FileType) *Processor {
 // The returned io.Reader can be passed directly to filesql.AddReader:
 //
 //	reader, result, err := processor.Process(input, &records)
-//	db.AddReader(reader, "table", filesql.FileTypeCSV)
+//	db.AddReader(reader, "table", parser.CSV)
 //
 // For format information, use ProcessResult.OriginalFormat or cast to Stream:
 //
@@ -57,7 +59,7 @@ func NewProcessor(fileType FileType) *Processor {
 //	}
 //
 //	csvData := "name,email,age\n  John  ,JOHN@EXAMPLE.COM,30\n"
-//	processor := fileprep.NewProcessor(fileprep.FileTypeCSV)
+//	processor := fileprep.NewProcessor(parser.CSV)
 //	var users []User
 //	reader, result, err := processor.Process(strings.NewReader(csvData), &users)
 //	if err != nil {
@@ -76,51 +78,14 @@ func (p *Processor) Process(input io.Reader, structSlicePointer any) (io.Reader,
 		return nil, nil, err
 	}
 
-	// Read and decompress if needed
-	decompressedReader, cleanup, err := p.decompressIfNeeded(input)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer func() {
-		if cleanup != nil {
-			cleanup() //nolint:errcheck,gosec // cleanup errors are not critical
-		}
-	}()
-
-	// Parse based on file type
-	// For CSV/TSV/LTSV, pass the reader directly to avoid extra copy.
-	// For XLSX/Parquet, we need to read all data first as these formats require random access.
-	var parseRes *parseResult
-
-	switch p.fileType.BaseType() {
-	case FileTypeCSV:
-		parseRes, err = parseCSV(decompressedReader, csvDelimiter)
-	case FileTypeTSV:
-		parseRes, err = parseCSV(decompressedReader, tsvDelimiter)
-	case FileTypeLTSV:
-		parseRes, err = parseLTSV(decompressedReader)
-	case FileTypeXLSX, FileTypeParquet:
-		// XLSX and Parquet require random access, so we need to read all data first
-		var data []byte
-		data, err = io.ReadAll(decompressedReader)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to read input: %w", err)
-		}
-		if p.fileType.BaseType() == FileTypeXLSX {
-			parseRes, err = parseXLSX(data)
-		} else {
-			parseRes, err = parseParquet(data)
-		}
-	default:
-		return nil, nil, fmt.Errorf("%w: %s", ErrUnsupportedFileType, p.fileType)
-	}
-
+	// Parse the file using fileparser
+	tableData, err := fileparser.Parse(input, p.fileType)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	headers := parseRes.headers
-	records := parseRes.records
+	headers := tableData.Headers
+	records := tableData.Records
 
 	// Build header name to column index map (first occurrence wins for duplicates)
 	headerToColIdx := make(map[string]int, len(headers))
@@ -286,24 +251,14 @@ func (p *Processor) Process(input io.Reader, structSlicePointer any) (io.Reader,
 // outputFormat returns the actual output format for the stream.
 // CSV, TSV, and LTSV preserve their format.
 // XLSX and Parquet are converted to CSV.
-func (p *Processor) outputFormat() FileType {
-	switch p.fileType.BaseType() {
-	case FileTypeCSV, FileTypeTSV, FileTypeLTSV:
-		return p.fileType.BaseType()
+func (p *Processor) outputFormat() fileparser.FileType {
+	switch fileparser.BaseFileType(p.fileType) {
+	case fileparser.CSV, fileparser.TSV, fileparser.LTSV:
+		return fileparser.BaseFileType(p.fileType)
 	default:
 		// XLSX, Parquet output as CSV
-		return FileTypeCSV
+		return fileparser.CSV
 	}
-}
-
-// decompressIfNeeded wraps the reader with decompression if the file type is compressed
-func (p *Processor) decompressIfNeeded(reader io.Reader) (io.Reader, func() error, error) {
-	if !p.fileType.IsCompressed() {
-		return reader, nil, nil
-	}
-
-	handler := newCompressionHandler(p.fileType.compressionTypeValue())
-	return handler.CreateReader(reader)
 }
 
 // estimateOutputSize estimates the output buffer size based on headers and records.
@@ -328,10 +283,10 @@ func (p *Processor) estimateOutputSize(headers []string, records [][]string) int
 //   - XLSX → CSV (tabular data as comma-delimited)
 //   - Parquet → CSV (tabular data as comma-delimited)
 func (p *Processor) writeOutput(w io.Writer, headers []string, records [][]string) error {
-	switch p.fileType.BaseType() {
-	case FileTypeTSV:
+	switch fileparser.BaseFileType(p.fileType) {
+	case fileparser.TSV:
 		return p.writeTSV(w, headers, records)
-	case FileTypeLTSV:
+	case fileparser.LTSV:
 		return p.writeLTSV(w, headers, records)
 	default:
 		// CSV, XLSX, Parquet all output as CSV (tabular format)

@@ -3,6 +3,8 @@ package fileprep
 import (
 	"errors"
 	"fmt"
+
+	"github.com/nao1215/fileparser"
 )
 
 // Sentinel errors for fileprep
@@ -106,7 +108,7 @@ type ProcessResult struct {
 	// Columns contains the column names from the header
 	Columns []string
 	// OriginalFormat is the file type that was processed
-	OriginalFormat FileType
+	OriginalFormat fileparser.FileType
 }
 
 // InvalidRowCount returns the number of rows that failed validation

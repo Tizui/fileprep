@@ -3,6 +3,8 @@ package fileprep
 import (
 	"io"
 	"testing"
+
+	"github.com/nao1215/fileparser"
 )
 
 func TestStream_Format(t *testing.T) {
@@ -10,15 +12,15 @@ func TestStream_Format(t *testing.T) {
 
 	tests := []struct {
 		name           string
-		outputFormat   FileType
-		originalFormat FileType
-		wantFormat     FileType
+		outputFormat   fileparser.FileType
+		originalFormat fileparser.FileType
+		wantFormat     fileparser.FileType
 	}{
-		{"CSV", FileTypeCSV, FileTypeCSV, FileTypeCSV},
-		{"CSV gzip returns CSV", FileTypeCSV, FileTypeCSVGZ, FileTypeCSV},
-		{"TSV bzip2 returns TSV", FileTypeTSV, FileTypeTSVBZ2, FileTypeTSV},
-		{"XLSX outputs as CSV", FileTypeCSV, FileTypeXLSXZSTD, FileTypeCSV},
-		{"Parquet outputs as CSV", FileTypeCSV, FileTypeParquet, FileTypeCSV},
+		{"CSV", fileparser.CSV, fileparser.CSV, fileparser.CSV},
+		{"CSV gzip returns CSV", fileparser.CSV, fileparser.CSVGZ, fileparser.CSV},
+		{"TSV bzip2 returns TSV", fileparser.TSV, fileparser.TSVBZ2, fileparser.TSV},
+		{"XLSX outputs as CSV", fileparser.CSV, fileparser.XLSXZSTD, fileparser.CSV},
+		{"Parquet outputs as CSV", fileparser.CSV, fileparser.Parquet, fileparser.CSV},
 	}
 
 	for _, tt := range tests {
@@ -41,7 +43,7 @@ func TestStream_Read(t *testing.T) {
 	t.Parallel()
 
 	data := []byte("hello, world")
-	s := newStream(data, FileTypeCSV, FileTypeCSV)
+	s := newStream(data, fileparser.CSV, fileparser.CSV)
 
 	// Read all data
 	result, err := io.ReadAll(s)
@@ -58,7 +60,7 @@ func TestStream_Seek(t *testing.T) {
 	t.Parallel()
 
 	data := []byte("hello, world")
-	s := newStream(data, FileTypeCSV, FileTypeCSV)
+	s := newStream(data, fileparser.CSV, fileparser.CSV)
 
 	// Read all
 	if _, err := io.ReadAll(s); err != nil {
@@ -88,7 +90,7 @@ func TestStream_Len(t *testing.T) {
 	t.Parallel()
 
 	data := []byte("hello")
-	s := newStream(data, FileTypeCSV, FileTypeCSV)
+	s := newStream(data, fileparser.CSV, fileparser.CSV)
 
 	if got := s.Len(); got != len(data) {
 		t.Errorf("Len() = %d, want %d", got, len(data))

@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/nao1215/fileparser"
 )
 
 // TestIntegration_AllPrepTags tests all prep tags in an integrated manner
@@ -59,7 +61,7 @@ func TestIntegration_AllPrepTags(t *testing.T) {
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	pipeReader, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -185,7 +187,7 @@ func TestIntegration_CombinedPrepTags(t *testing.T) {
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	pipeReader, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -224,7 +226,7 @@ invalid_email`
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	pipeReader, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -267,12 +269,12 @@ func TestIntegration_CompressedCSV(t *testing.T) {
 	tests := []struct {
 		name     string
 		filePath string
-		fileType FileType
+		fileType fileparser.FileType
 	}{
-		{"gzip CSV", filepath.Join("testdata", "sample.csv.gz"), FileTypeCSVGZ},
-		{"bzip2 CSV", filepath.Join("testdata", "sample.csv.bz2"), FileTypeCSVBZ2},
-		{"xz CSV", filepath.Join("testdata", "sample.csv.xz"), FileTypeCSVXZ},
-		{"zstd CSV", filepath.Join("testdata", "sample.csv.zst"), FileTypeCSVZSTD},
+		{"gzip CSV", filepath.Join("testdata", "sample.csv.gz"), fileparser.CSVGZ},
+		{"bzip2 CSV", filepath.Join("testdata", "sample.csv.bz2"), fileparser.CSVBZ2},
+		{"xz CSV", filepath.Join("testdata", "sample.csv.xz"), fileparser.CSVXZ},
+		{"zstd CSV", filepath.Join("testdata", "sample.csv.zst"), fileparser.CSVZSTD},
 	}
 
 	for _, tt := range tests {
@@ -332,7 +334,7 @@ func TestIntegration_TSVProcessing(t *testing.T) {
 
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeTSV)
+	processor := NewProcessor(fileparser.TSV)
 	pipeReader, result, err := processor.Process(file, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -342,8 +344,8 @@ func TestIntegration_TSVProcessing(t *testing.T) {
 		_, _ = io.Copy(io.Discard, pipeReader) //nolint:errcheck // discarding output in test
 	}()
 
-	if result.OriginalFormat != FileTypeTSV {
-		t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, FileTypeTSV)
+	if result.OriginalFormat != fileparser.TSV {
+		t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, fileparser.TSV)
 	}
 
 	if len(records) == 0 {
@@ -369,7 +371,7 @@ func TestIntegration_LTSVProcessing(t *testing.T) {
 
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeLTSV)
+	processor := NewProcessor(fileparser.LTSV)
 	pipeReader, result, err := processor.Process(file, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -379,8 +381,8 @@ func TestIntegration_LTSVProcessing(t *testing.T) {
 		_, _ = io.Copy(io.Discard, pipeReader) //nolint:errcheck // discarding output in test
 	}()
 
-	if result.OriginalFormat != FileTypeLTSV {
-		t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, FileTypeLTSV)
+	if result.OriginalFormat != fileparser.LTSV {
+		t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, fileparser.LTSV)
 	}
 
 	if len(records) == 0 {
@@ -405,7 +407,7 @@ John,john@example.com,25`
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	pipeReader, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -457,7 +459,7 @@ password,different`
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	pipeReader, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -500,7 +502,7 @@ BOB@EXAMPLE.COM,25,  Bob  `
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	_, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -554,7 +556,7 @@ func TestIntegration_NameTagOverride(t *testing.T) {
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	_, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -599,7 +601,7 @@ Jane,Smith,25`
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	_, result, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
@@ -644,7 +646,7 @@ john,JOHN@EXAMPLE.COM`
 	reader := strings.NewReader(csvData)
 	var records []TestRecord
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	pipeReader, _, err := processor.Process(reader, &records)
 	if err != nil {
 		t.Fatalf("Process() error = %v", err)
