@@ -3,9 +3,11 @@ package fileprep
 import (
 	"bytes"
 	"io"
+	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/nao1215/fileparser"
 	"github.com/parquet-go/parquet-go"
 )
 
@@ -46,7 +48,7 @@ Bob Wilson,bob@example.com,35
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			processor := NewProcessor(FileTypeCSV)
+			processor := NewProcessor(fileparser.CSV)
 			var records []TestRecord
 
 			reader, result, err := processor.Process(strings.NewReader(tt.input), &records)
@@ -88,7 +90,7 @@ func TestProcessor_Process_TSV(t *testing.T) {
 
 	tsvData := "name\temail\tage\n  Alice  \talice@example.com\t28\nBob\tbob@example.com\t32\n"
 
-	processor := NewProcessor(FileTypeTSV)
+	processor := NewProcessor(fileparser.TSV)
 	var records []TestRecord
 
 	reader, result, err := processor.Process(strings.NewReader(tsvData), &records)
@@ -119,7 +121,7 @@ func TestProcessor_Process_LTSV(t *testing.T) {
 
 	ltsvData := "name:Charlie\temail:charlie@example.com\tage:40\nname:Diana\temail:diana@example.com\tage:35\n"
 
-	processor := NewProcessor(FileTypeLTSV)
+	processor := NewProcessor(fileparser.LTSV)
 	var records []TestRecord
 
 	reader, result, err := processor.Process(strings.NewReader(ltsvData), &records)
@@ -143,7 +145,7 @@ func TestProcessor_OutputReader(t *testing.T) {
   John  ,john@example.com,30
 `
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	var records []TestRecord
 
 	reader, _, err := processor.Process(strings.NewReader(csvData), &records)
@@ -178,7 +180,7 @@ func TestProcessor_ValidationError(t *testing.T) {
 ,john@example.com,30
 `
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	var records []TestRecord
 
 	_, result, err := processor.Process(strings.NewReader(csvData), &records)
@@ -212,7 +214,7 @@ func TestProcessor_ValidationError(t *testing.T) {
 func TestProcessor_EmptyFile(t *testing.T) {
 	t.Parallel()
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	var records []TestRecord
 
 	_, _, err := processor.Process(strings.NewReader(""), &records)
@@ -224,7 +226,7 @@ func TestProcessor_EmptyFile(t *testing.T) {
 func TestProcessor_InvalidStructSlicePointer(t *testing.T) {
 	t.Parallel()
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 
 	// Test with non-pointer
 	var records []TestRecord
@@ -267,7 +269,7 @@ func TestProcessor_Process_Parquet(t *testing.T) {
 		t.Fatalf("failed to close parquet writer: %v", err)
 	}
 
-	processor := NewProcessor(FileTypeParquet)
+	processor := NewProcessor(fileparser.Parquet)
 	var records []TestRecord
 
 	reader, result, err := processor.Process(bytes.NewReader(buf.Bytes()), &records)
@@ -314,8 +316,8 @@ func TestProcessor_Process_Parquet(t *testing.T) {
 	}
 
 	// Verify original format
-	if result.OriginalFormat != FileTypeParquet {
-		t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, FileTypeParquet)
+	if result.OriginalFormat != fileparser.Parquet {
+		t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, fileparser.Parquet)
 	}
 }
 
@@ -360,11 +362,10 @@ func TestProcessor_CSV_EdgeCases(t *testing.T) {
 		{
 			name:         "uneven rows - short row",
 			input:        "col1,col2,col3\na,b,c\nd,e\nf,g,h\n",
-			wantRowCount: 3,
-			wantColCount: 3,
-			wantErr:      false,
-			checkRow:     1,
-			wantCol3:     "", // Short row should be padded with empty strings
+			wantRowCount: 0,
+			wantColCount: 0,
+			wantErr:      true, // fileparser returns error for mismatched column count
+			checkRow:     -1,
 		},
 		{
 			name:         "empty file",
@@ -432,7 +433,7 @@ func TestProcessor_CSV_EdgeCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			processor := NewProcessor(FileTypeCSV)
+			processor := NewProcessor(fileparser.CSV)
 			var records []EdgeCaseRecord
 
 			reader, result, err := processor.Process(strings.NewReader(tt.input), &records)
@@ -482,7 +483,7 @@ func TestProcessor_CSV_WhitespaceValues(t *testing.T) {
 	t.Parallel()
 
 	input := "col1,col2,col3\n   ,\t\t,  \n"
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	var records []EdgeCaseRecord
 
 	_, _, err := processor.Process(strings.NewReader(input), &records)
@@ -504,7 +505,7 @@ func TestProcessor_CSV_EmptyValues(t *testing.T) {
 	t.Parallel()
 
 	input := "col1,col2,col3\n,,\na,,c\n,b,\n"
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	var records []EdgeCaseRecord
 
 	_, _, err := processor.Process(strings.NewReader(input), &records)
@@ -522,20 +523,16 @@ func TestProcessor_CSV_EmptyValues(t *testing.T) {
 	}
 }
 
-// makeHeaders creates n header names
+// makeHeaders creates n unique header names
 func makeHeaders(n int) []string {
 	headers := make([]string, n)
-	for i := range n {
-		headers[i] = "col" + strings.Repeat("x", i%10)
-		if i > 0 {
-			headers[i] += string(rune('0' + i%10))
-		}
-	}
 	// Ensure first 3 are col1, col2, col3 for struct mapping
-	if n >= 3 {
-		headers[0] = "col1"
-		headers[1] = "col2"
-		headers[2] = "col3"
+	for i := range n {
+		if i < 3 {
+			headers[i] = "col" + string(rune('1'+i))
+		} else {
+			headers[i] = "column_" + strconv.Itoa(i)
+		}
 	}
 	return headers
 }
@@ -566,7 +563,7 @@ func TestProcessor_CSV_LargeColumnCount(t *testing.T) {
 
 	input := strings.Join(headers, ",") + "\n" + strings.Join(values, ",") + "\n"
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	var records []EdgeCaseRecord
 
 	_, result, err := processor.Process(strings.NewReader(input), &records)
@@ -594,7 +591,7 @@ func TestProcessor_CSV_ManyRows(t *testing.T) {
 		buf.WriteString("a" + string(rune('0'+i%10)) + ",b,c\n")
 	}
 
-	processor := NewProcessor(FileTypeCSV)
+	processor := NewProcessor(fileparser.CSV)
 	var records []EdgeCaseRecord
 
 	_, result, err := processor.Process(strings.NewReader(buf.String()), &records)

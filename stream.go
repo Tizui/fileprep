@@ -3,6 +3,8 @@ package fileprep
 import (
 	"bytes"
 	"io"
+
+	"github.com/nao1215/fileparser"
 )
 
 // Stream represents a preprocessed data stream with format information.
@@ -12,22 +14,22 @@ type Stream interface {
 	// Format returns the actual output format of the stream data.
 	// For CSV/TSV/LTSV input, this matches the input format.
 	// For XLSX/Parquet input, this returns CSV since the output is CSV-formatted.
-	Format() FileType
+	Format() fileparser.FileType
 	// OriginalFormat returns the original input file type including compression
-	OriginalFormat() FileType
+	OriginalFormat() fileparser.FileType
 }
 
 // stream implements the Stream interface
 type stream struct {
 	reader         *bytes.Reader
-	format         FileType
-	originalFormat FileType
+	format         fileparser.FileType
+	originalFormat fileparser.FileType
 }
 
 // newStream creates a new Stream from data and format information.
 // outputFormat is the actual format of the data in the stream.
 // originalFormat is the format of the input file.
-func newStream(data []byte, outputFormat FileType, originalFormat FileType) *stream {
+func newStream(data []byte, outputFormat fileparser.FileType, originalFormat fileparser.FileType) *stream {
 	return &stream{
 		reader:         bytes.NewReader(data),
 		format:         outputFormat,
@@ -43,12 +45,12 @@ func (s *stream) Read(p []byte) (n int, err error) {
 // Format returns the actual output format of the stream data.
 // For CSV/TSV/LTSV input, this matches the input format.
 // For XLSX/Parquet input, this returns CSV since the output is CSV-formatted.
-func (s *stream) Format() FileType {
+func (s *stream) Format() fileparser.FileType {
 	return s.format
 }
 
 // OriginalFormat returns the original file type including compression info
-func (s *stream) OriginalFormat() FileType {
+func (s *stream) OriginalFormat() fileparser.FileType {
 	return s.originalFormat
 }
 
