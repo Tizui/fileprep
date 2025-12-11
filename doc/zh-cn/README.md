@@ -9,7 +9,7 @@
 
 ![fileprep-logo](../images/fileprep-logo-small.png)
 
-**fileprep** 是一个用于清理、规范化和验证结构化数据（CSV、TSV、LTSV、Parquet 和 Excel）的 Go 库，通过轻量级的 struct 标签规则实现，无缝支持 gzip、bzip2、xz 和 zstd 压缩流。
+**fileprep** 是一个用于清理、规范化和验证结构化数据（CSV、TSV、LTSV、Parquet 和 Excel）的 Go 库，通过轻量级的 struct 标签规则实现，无缝支持 gzip、bzip2、xz、zstd、zlib、snappy、s2 和 lz4 压缩流。
 
 ## 为什么选择 fileprep？
 
@@ -20,7 +20,7 @@
 ## 功能
 
 - 多文件格式支持：CSV、TSV、LTSV、Parquet、Excel (.xlsx)
-- 压缩支持：gzip (.gz)、bzip2 (.bz2)、xz (.xz)、zstd (.zst)
+- 压缩支持：gzip (.gz)、bzip2 (.bz2)、xz (.xz)、zstd (.zst)、zlib (.z)、snappy (.snappy)、s2 (.s2)、lz4 (.lz4)
 - 基于名称的列绑定：字段自动匹配 `snake_case` 列名，可通过 `name` 标签自定义
 - 基于 struct 标签的预处理（`prep` 标签）：trim、lowercase、uppercase、默认值等
 - 基于 struct 标签的验证（`validate` 标签）：required 等
@@ -514,11 +514,24 @@ invalid-uuid,abc,not-an-email,-100,US,USA,2024/01/15,2024-01-10,999.999.999.999,
 
 | 格式 | 扩展名 | 压缩格式 |
 |------|--------|----------|
-| CSV | `.csv` | `.csv.gz`、`.csv.bz2`、`.csv.xz`、`.csv.zst` |
-| TSV | `.tsv` | `.tsv.gz`、`.tsv.bz2`、`.tsv.xz`、`.tsv.zst` |
-| LTSV | `.ltsv` | `.ltsv.gz`、`.ltsv.bz2`、`.ltsv.xz`、`.ltsv.zst` |
-| Excel | `.xlsx` | `.xlsx.gz`、`.xlsx.bz2`、`.xlsx.xz`、`.xlsx.zst` |
-| Parquet | `.parquet` | `.parquet.gz`、`.parquet.bz2`、`.parquet.xz`、`.parquet.zst` |
+| CSV | `.csv` | `.csv.gz`、`.csv.bz2`、`.csv.xz`、`.csv.zst`、`.csv.z`、`.csv.snappy`、`.csv.s2`、`.csv.lz4` |
+| TSV | `.tsv` | `.tsv.gz`、`.tsv.bz2`、`.tsv.xz`、`.tsv.zst`、`.tsv.z`、`.tsv.snappy`、`.tsv.s2`、`.tsv.lz4` |
+| LTSV | `.ltsv` | `.ltsv.gz`、`.ltsv.bz2`、`.ltsv.xz`、`.ltsv.zst`、`.ltsv.z`、`.ltsv.snappy`、`.ltsv.s2`、`.ltsv.lz4` |
+| Excel | `.xlsx` | `.xlsx.gz`、`.xlsx.bz2`、`.xlsx.xz`、`.xlsx.zst`、`.xlsx.z`、`.xlsx.snappy`、`.xlsx.s2`、`.xlsx.lz4` |
+| Parquet | `.parquet` | `.parquet.gz`、`.parquet.bz2`、`.parquet.xz`、`.parquet.zst`、`.parquet.z`、`.parquet.snappy`、`.parquet.s2`、`.parquet.lz4` |
+
+### 支持的压缩格式
+
+| 格式 | 扩展名 | 描述 |
+|------|--------|------|
+| gzip | `.gz` | GNU zip 压缩，广泛使用 |
+| bzip2 | `.bz2` | 块排序压缩，压缩率优秀 |
+| xz | `.xz` | LZMA2 高性能压缩 |
+| zstd | `.zst` | Facebook 的 Zstandard 压缩 |
+| zlib | `.z` | 标准 DEFLATE 压缩 |
+| snappy | `.snappy` | Google 的高速压缩 |
+| s2 | `.s2` | 改进的 Snappy 扩展 |
+| lz4 | `.lz4` | 极速压缩 |
 
 **Parquet 压缩说明**：外部压缩（`.parquet.gz` 等）是针对容器文件本身的。Parquet 文件还可能使用内部压缩（Snappy、GZIP、LZ4、ZSTD），这由 parquet-go 库透明处理。
 
@@ -646,7 +659,7 @@ fileprep 将**整个文件加载到内存**中进行处理。这允许随机访�
 | 100-500 MB | 500 MB - 1.5 GB | 监控内存，考虑分块处理 |
 | > 500 MB | > 1.5 GB | 拆分文件或使用流式替代方案 |
 
-对于压缩输入（gzip、bzip2、xz、zstd），内存使用基于**解压后**的大小。
+对于压缩输入（gzip、bzip2、xz、zstd、zlib、snappy、s2、lz4），内存使用基于**解压后**的大小。
 
 ## 性能
 

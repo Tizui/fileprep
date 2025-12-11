@@ -9,7 +9,7 @@
 
 ![fileprep-logo](../images/fileprep-logo-small.png)
 
-**fileprep** は、CSV、TSV、LTSV、Parquet、Excelなどの構造化データを、軽量なstructタグルールでクリーニング、正規化、バリデーションするためのGoライブラリです。gzip、bzip2、xz、zstdストリームをシームレスにサポートしています。
+**fileprep** は、CSV、TSV、LTSV、Parquet、Excelなどの構造化データを、軽量なstructタグルールでクリーニング、正規化、バリデーションするためのGoライブラリです。gzip、bzip2、xz、zstd、zlib、snappy、s2、lz4ストリームをシームレスにサポートしています。
 
 ## なぜfileprepなのか？
 
@@ -20,7 +20,7 @@
 ## 機能
 
 - 複数ファイル形式対応: CSV, TSV, LTSV, Parquet, Excel (.xlsx)
-- 圧縮対応: gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst)
+- 圧縮対応: gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst), zlib (.z), snappy (.snappy), s2 (.s2), lz4 (.lz4)
 - 名前ベースのカラムバインディング: フィールドは自動的に `snake_case` カラム名にマッチ、`name` タグでカスタマイズ可能
 - structタグベースの前処理 (`prep` タグ): trim、lowercase、uppercase、デフォルト値など
 - structタグベースのバリデーション (`validate` タグ): required など
@@ -514,11 +514,24 @@ invalid-uuid,abc,not-an-email,-100,US,USA,2024/01/15,2024-01-10,999.999.999.999,
 
 | 形式 | 拡張子 | 圧縮形式 |
 |------|--------|----------|
-| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst` |
-| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst` |
-| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst` |
-| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst` |
-| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst` |
+| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst`, `.csv.z`, `.csv.snappy`, `.csv.s2`, `.csv.lz4` |
+| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst`, `.tsv.z`, `.tsv.snappy`, `.tsv.s2`, `.tsv.lz4` |
+| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst`, `.ltsv.z`, `.ltsv.snappy`, `.ltsv.s2`, `.ltsv.lz4` |
+| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst`, `.xlsx.z`, `.xlsx.snappy`, `.xlsx.s2`, `.xlsx.lz4` |
+| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst`, `.parquet.z`, `.parquet.snappy`, `.parquet.s2`, `.parquet.lz4` |
+
+### サポートされている圧縮形式
+
+| 形式 | 拡張子 | ライブラリ | 備考 |
+|------|--------|-----------|------|
+| gzip | `.gz` | compress/gzip | 標準ライブラリ |
+| bzip2 | `.bz2` | compress/bzip2 | 標準ライブラリ |
+| xz | `.xz` | github.com/ulikunitz/xz | Pure Go |
+| zstd | `.zst` | github.com/klauspost/compress/zstd | Pure Go、高性能 |
+| zlib | `.z` | compress/zlib | 標準ライブラリ |
+| snappy | `.snappy` | github.com/klauspost/compress/snappy | Pure Go、高性能 |
+| s2 | `.s2` | github.com/klauspost/compress/s2 | Snappy互換、より高速 |
+| lz4 | `.lz4` | github.com/pierrec/lz4/v4 | Pure Go |
 
 **Parquet圧縮についての注意**: 外部圧縮（`.parquet.gz`など）はコンテナファイル自体の圧縮です。Parquetファイルは内部圧縮（Snappy、GZIP、LZ4、ZSTD）も使用でき、parquet-goライブラリによって透過的に処理されます。
 
@@ -646,7 +659,7 @@ fileprepは処理のために**ファイル全体をメモリに読み込みま�
 | 100-500 MB | 500 MB - 1.5 GB | メモリ監視、チャンク処理を検討 |
 | > 500 MB | > 1.5 GB | ファイル分割またはストリーミング代替案を使用 |
 
-圧縮入力（gzip、bzip2、xz、zstd）の場合、メモリ使用量は**解凍後**のサイズに基づきます。
+圧縮入力（gzip、bzip2、xz、zstd、zlib、snappy、s2、lz4）の場合、メモリ使用量は**解凍後**のサイズに基づきます。
 
 ## パフォーマンス
 

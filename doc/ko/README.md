@@ -9,7 +9,7 @@
 
 ![fileprep-logo](../images/fileprep-logo-small.png)
 
-**fileprep**은 CSV, TSV, LTSV, Parquet, Excel 등의 구조화된 데이터를 경량 struct 태그 규칙으로 정리, 정규화, 검증하기 위한 Go 라이브러리입니다. gzip, bzip2, xz, zstd 스트림을 원활하게 지원합니다.
+**fileprep**은 CSV, TSV, LTSV, Parquet, Excel 등의 구조화된 데이터를 경량 struct 태그 규칙으로 정리, 정규화, 검증하기 위한 Go 라이브러리입니다. gzip, bzip2, xz, zstd, zlib, snappy, s2, lz4 스트림을 원활하게 지원합니다.
 
 ## 왜 fileprep인가?
 
@@ -20,7 +20,7 @@
 ## 기능
 
 - 다중 파일 형식 지원: CSV, TSV, LTSV, Parquet, Excel (.xlsx)
-- 압축 지원: gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst)
+- 압축 지원: gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst), zlib (.z), snappy (.snappy), s2 (.s2), lz4 (.lz4)
 - 이름 기반 컬럼 바인딩: 필드는 자동으로 `snake_case` 컬럼명에 매칭, `name` 태그로 커스터마이즈 가능
 - struct 태그 기반 전처리 (`prep` 태그): trim, lowercase, uppercase, 기본값 등
 - struct 태그 기반 검증 (`validate` 태그): required 등
@@ -514,11 +514,24 @@ invalid-uuid,abc,not-an-email,-100,US,USA,2024/01/15,2024-01-10,999.999.999.999,
 
 | 형식 | 확장자 | 압축 형식 |
 |------|--------|----------|
-| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst` |
-| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst` |
-| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst` |
-| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst` |
-| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst` |
+| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst`, `.csv.z`, `.csv.snappy`, `.csv.s2`, `.csv.lz4` |
+| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst`, `.tsv.z`, `.tsv.snappy`, `.tsv.s2`, `.tsv.lz4` |
+| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst`, `.ltsv.z`, `.ltsv.snappy`, `.ltsv.s2`, `.ltsv.lz4` |
+| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst`, `.xlsx.z`, `.xlsx.snappy`, `.xlsx.s2`, `.xlsx.lz4` |
+| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst`, `.parquet.z`, `.parquet.snappy`, `.parquet.s2`, `.parquet.lz4` |
+
+### 지원 압축 형식
+
+| 형식 | 확장자 | 설명 |
+|------|--------|------|
+| gzip | `.gz` | GNU zip 압축, 널리 사용됨 |
+| bzip2 | `.bz2` | 블록 정렬 압축, 우수한 압축률 |
+| xz | `.xz` | LZMA2 고성능 압축 |
+| zstd | `.zst` | Facebook의 Zstandard 압축 |
+| zlib | `.z` | 표준 DEFLATE 압축 |
+| snappy | `.snappy` | Google의 고속 압축 |
+| s2 | `.s2` | 개선된 Snappy 확장 |
+| lz4 | `.lz4` | 초고속 압축 |
 
 **Parquet 압축 참고**: 외부 압축(`.parquet.gz` 등)은 컨테이너 파일 자체의 압축입니다. Parquet 파일은 내부 압축(Snappy, GZIP, LZ4, ZSTD)도 사용할 수 있으며, parquet-go 라이브러리에 의해 투명하게 처리됩니다.
 
@@ -646,7 +659,7 @@ fileprep은 처리를 위해 **전체 파일을 메모리에 로드**합니다. 
 | 100-500 MB | 500 MB - 1.5 GB | 메모리 모니터링, 청크 처리 고려 |
 | > 500 MB | > 1.5 GB | 파일 분할 또는 스트리밍 대안 사용 |
 
-압축 입력(gzip, bzip2, xz, zstd)의 경우 메모리 사용량은 **압축 해제 후** 크기를 기준으로 합니다.
+압축 입력(gzip, bzip2, xz, zstd, zlib, snappy, s2, lz4)의 경우 메모리 사용량은 **압축 해제 후** 크기를 기준으로 합니다.
 
 ## 성능
 

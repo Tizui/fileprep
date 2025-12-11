@@ -9,7 +9,7 @@
 
 ![fileprep-logo](./doc/images/fileprep-logo-small.png)
 
-**fileprep** is a Go library for cleaning, normalizing, and validating structured data—CSV, TSV, LTSV, Parquet, and Excel—through lightweight struct-tag rules, with seamless support for gzip, bzip2, xz, and zstd streams.
+**fileprep** is a Go library for cleaning, normalizing, and validating structured data—CSV, TSV, LTSV, Parquet, and Excel—through lightweight struct-tag rules, with seamless support for gzip, bzip2, xz, zstd, zlib, snappy, s2, and lz4 streams.
 
 ## Why fileprep?
 
@@ -20,7 +20,7 @@ While studying machine learning, I realized: "If I extend [nao1215/csv](https://
 ## Features
 
 - Multiple file format support: CSV, TSV, LTSV, Parquet, Excel (.xlsx)
-- Compression support: gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst)
+- Compression support: gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst), zlib (.z), snappy (.snappy), s2 (.s2), lz4 (.lz4)
 - Name-based column binding: Fields auto-match `snake_case` column names, customizable via `name` tag
 - Struct tag-based preprocessing (`prep` tag): trim, lowercase, uppercase, default values
 - Struct tag-based validation (`validate` tag): required, and more
@@ -512,13 +512,26 @@ Multiple tags can be combined: `validate:"required,email"`
 
 ## Supported File Formats
 
-| Format | Extension | Compressed |
-|--------|-----------|------------|
-| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst` |
-| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst` |
-| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst` |
-| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst` |
-| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst` |
+| Format | Extension | Compressed Extensions |
+|--------|-----------|----------------------|
+| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst`, `.csv.z`, `.csv.snappy`, `.csv.s2`, `.csv.lz4` |
+| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst`, `.tsv.z`, `.tsv.snappy`, `.tsv.s2`, `.tsv.lz4` |
+| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst`, `.ltsv.z`, `.ltsv.snappy`, `.ltsv.s2`, `.ltsv.lz4` |
+| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst`, `.xlsx.z`, `.xlsx.snappy`, `.xlsx.s2`, `.xlsx.lz4` |
+| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst`, `.parquet.z`, `.parquet.snappy`, `.parquet.s2`, `.parquet.lz4` |
+
+### Supported Compression Formats
+
+| Format | Extension | Library | Notes |
+|--------|-----------|---------|-------|
+| gzip | `.gz` | compress/gzip | Standard library |
+| bzip2 | `.bz2` | compress/bzip2 | Standard library |
+| xz | `.xz` | github.com/ulikunitz/xz | Pure Go |
+| zstd | `.zst` | github.com/klauspost/compress/zstd | Pure Go, high performance |
+| zlib | `.z` | compress/zlib | Standard library |
+| snappy | `.snappy` | github.com/klauspost/compress/snappy | Pure Go, high performance |
+| s2 | `.s2` | github.com/klauspost/compress/s2 | Snappy-compatible, faster |
+| lz4 | `.lz4` | github.com/pierrec/lz4/v4 | Pure Go |
 
 **Note on Parquet compression**: The external compression (`.parquet.gz`, etc.) is for the container file itself. Parquet files may also use internal compression (Snappy, GZIP, LZ4, ZSTD) which is handled transparently by the parquet-go library.
 
@@ -646,7 +659,7 @@ fileprep loads the **entire file into memory** for processing. This enables rand
 | 100-500 MB | ~500 MB - 1.5 GB | Monitor memory, consider chunking |
 | > 500 MB | > 1.5 GB | Split files or use streaming alternatives |
 
-For compressed inputs (gzip, bzip2, xz, zstd), memory usage is based on **decompressed** size.
+For compressed inputs (gzip, bzip2, xz, zstd, zlib, snappy, s2, lz4), memory usage is based on **decompressed** size.
 
 ## Performance
 

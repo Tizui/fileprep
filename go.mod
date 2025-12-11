@@ -3,7 +3,7 @@ module github.com/nao1215/fileprep
 go 1.24.9
 
 require (
-	github.com/nao1215/fileparser v0.1.0
+	github.com/nao1215/fileparser v0.2.0
 	github.com/parquet-go/parquet-go v0.26.1
 	golang.org/x/text v0.31.0
 )

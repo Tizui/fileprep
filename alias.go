@@ -33,6 +33,35 @@ const (
 	FileTypeXLSXBZ2     = fileparser.XLSXBZ2
 	FileTypeXLSXXZ      = fileparser.XLSXXZ
 	FileTypeXLSXZSTD    = fileparser.XLSXZSTD
+
+	// zlib compression formats (v0.2.0+)
+	FileTypeCSVZLIB     = fileparser.CSVZLIB
+	FileTypeTSVZLIB     = fileparser.TSVZLIB
+	FileTypeLTSVZLIB    = fileparser.LTSVZLIB
+	FileTypeParquetZLIB = fileparser.ParquetZLIB
+	FileTypeXLSXZLIB    = fileparser.XLSXZLIB
+
+	// snappy compression formats (v0.2.0+)
+	FileTypeCSVSNAPPY     = fileparser.CSVSNAPPY
+	FileTypeTSVSNAPPY     = fileparser.TSVSNAPPY
+	FileTypeLTSVSNAPPY    = fileparser.LTSVSNAPPY
+	FileTypeParquetSNAPPY = fileparser.ParquetSNAPPY
+	FileTypeXLSXSNAPPY    = fileparser.XLSXSNAPPY
+
+	// s2 compression formats (v0.2.0+)
+	FileTypeCSVS2     = fileparser.CSVS2
+	FileTypeTSVS2     = fileparser.TSVS2
+	FileTypeLTSVS2    = fileparser.LTSVS2
+	FileTypeParquetS2 = fileparser.ParquetS2
+	FileTypeXLSXS2    = fileparser.XLSXS2
+
+	// lz4 compression formats (v0.2.0+)
+	FileTypeCSVLZ4     = fileparser.CSVLZ4
+	FileTypeTSVLZ4     = fileparser.TSVLZ4
+	FileTypeLTSVLZ4    = fileparser.LTSVLZ4
+	FileTypeParquetLZ4 = fileparser.ParquetLZ4
+	FileTypeXLSXLZ4    = fileparser.XLSXLZ4
+
 	FileTypeUnsupported = fileparser.Unsupported
 )
 

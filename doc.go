@@ -47,7 +47,15 @@
 //   - Parquet (.parquet)
 //   - Excel (.xlsx)
 //
-// All formats support compression: gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst)
+// All formats support compression:
+//   - gzip (.gz)
+//   - bzip2 (.bz2)
+//   - xz (.xz)
+//   - zstd (.zst)
+//   - zlib (.z)
+//   - snappy (.snappy)
+//   - s2 (.s2)
+//   - lz4 (.lz4)
 //
 // # Prep Tags
 //

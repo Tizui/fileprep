@@ -275,6 +275,10 @@ func TestIntegration_CompressedCSV(t *testing.T) {
 		{"bzip2 CSV", filepath.Join("testdata", "sample.csv.bz2"), fileparser.CSVBZ2},
 		{"xz CSV", filepath.Join("testdata", "sample.csv.xz"), fileparser.CSVXZ},
 		{"zstd CSV", filepath.Join("testdata", "sample.csv.zst"), fileparser.CSVZSTD},
+		{"zlib CSV", filepath.Join("testdata", "sample.csv.z"), fileparser.CSVZLIB},
+		{"snappy CSV", filepath.Join("testdata", "sample.csv.snappy"), fileparser.CSVSNAPPY},
+		{"s2 CSV", filepath.Join("testdata", "sample.csv.s2"), fileparser.CSVS2},
+		{"lz4 CSV", filepath.Join("testdata", "sample.csv.lz4"), fileparser.CSVLZ4},
 	}
 
 	for _, tt := range tests {
@@ -311,6 +315,126 @@ func TestIntegration_CompressedCSV(t *testing.T) {
 			// Verify first record has trimmed name
 			if records[0].Name != "John Doe" {
 				t.Errorf("Name = %q, want %q", records[0].Name, "John Doe")
+			}
+		})
+	}
+}
+
+// TestIntegration_CompressedTSV tests processing compressed TSV files
+func TestIntegration_CompressedTSV(t *testing.T) {
+	t.Parallel()
+
+	type TestRecord struct {
+		Name  string `prep:"trim"`
+		Email string `prep:"trim,lowercase"`
+		Age   string
+	}
+
+	tests := []struct {
+		name     string
+		filePath string
+		fileType fileparser.FileType
+	}{
+		{"zlib TSV", filepath.Join("testdata", "sample.tsv.z"), fileparser.TSVZLIB},
+		{"snappy TSV", filepath.Join("testdata", "sample.tsv.snappy"), fileparser.TSVSNAPPY},
+		{"s2 TSV", filepath.Join("testdata", "sample.tsv.s2"), fileparser.TSVS2},
+		{"lz4 TSV", filepath.Join("testdata", "sample.tsv.lz4"), fileparser.TSVLZ4},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := os.Open(tt.filePath)
+			if err != nil {
+				t.Fatalf("os.Open() error = %v", err)
+			}
+			defer file.Close()
+
+			var records []TestRecord
+
+			processor := NewProcessor(tt.fileType)
+			pipeReader, result, err := processor.Process(file, &records)
+			if err != nil {
+				t.Fatalf("Process() error = %v", err)
+			}
+
+			go func() {
+				_, _ = io.Copy(io.Discard, pipeReader) //nolint:errcheck // discarding output in test
+			}()
+
+			if result.OriginalFormat != tt.fileType {
+				t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, tt.fileType)
+			}
+
+			// Verify at least one record was processed
+			if len(records) == 0 {
+				t.Error("expected at least one record")
+			}
+
+			// Verify first record has trimmed name
+			if records[0].Name != "Alice" {
+				t.Errorf("Name = %q, want %q", records[0].Name, "Alice")
+			}
+		})
+	}
+}
+
+// TestIntegration_CompressedLTSV tests processing compressed LTSV files
+func TestIntegration_CompressedLTSV(t *testing.T) {
+	t.Parallel()
+
+	type TestRecord struct {
+		Name  string `prep:"trim"`
+		Email string `prep:"trim,lowercase"`
+		Age   string
+	}
+
+	tests := []struct {
+		name     string
+		filePath string
+		fileType fileparser.FileType
+	}{
+		{"zlib LTSV", filepath.Join("testdata", "sample.ltsv.z"), fileparser.LTSVZLIB},
+		{"snappy LTSV", filepath.Join("testdata", "sample.ltsv.snappy"), fileparser.LTSVSNAPPY},
+		{"s2 LTSV", filepath.Join("testdata", "sample.ltsv.s2"), fileparser.LTSVS2},
+		{"lz4 LTSV", filepath.Join("testdata", "sample.ltsv.lz4"), fileparser.LTSVLZ4},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			file, err := os.Open(tt.filePath)
+			if err != nil {
+				t.Fatalf("os.Open() error = %v", err)
+			}
+			defer file.Close()
+
+			var records []TestRecord
+
+			processor := NewProcessor(tt.fileType)
+			pipeReader, result, err := processor.Process(file, &records)
+			if err != nil {
+				t.Fatalf("Process() error = %v", err)
+			}
+
+			go func() {
+				_, _ = io.Copy(io.Discard, pipeReader) //nolint:errcheck // discarding output in test
+			}()
+
+			if result.OriginalFormat != tt.fileType {
+				t.Errorf("OriginalFormat = %v, want %v", result.OriginalFormat, tt.fileType)
+			}
+
+			// Verify at least one record was processed
+			if len(records) == 0 {
+				t.Error("expected at least one record")
+			}
+
+			// Verify first record has correct name
+			if records[0].Name != "Charlie" {
+				t.Errorf("Name = %q, want %q", records[0].Name, "Charlie")
 			}
 		})
 	}

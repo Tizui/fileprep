@@ -9,7 +9,7 @@
 
 ![fileprep-logo](../images/fileprep-logo-small.png)
 
-**fileprep** est une bibliothèque Go pour nettoyer, normaliser et valider des données structurées (CSV, TSV, LTSV, Parquet et Excel) via des règles légères basées sur les balises struct, avec un support transparent des flux gzip, bzip2, xz et zstd.
+**fileprep** est une bibliothèque Go pour nettoyer, normaliser et valider des données structurées (CSV, TSV, LTSV, Parquet et Excel) via des règles légères basées sur les balises struct, avec un support transparent des flux gzip, bzip2, xz, zstd, zlib, snappy, s2 et lz4.
 
 ## Pourquoi fileprep ?
 
@@ -20,7 +20,7 @@ En étudiant l'apprentissage automatique, j'ai réalisé : "Si j'étends [nao121
 ## Fonctionnalités
 
 - Support multi-formats : CSV, TSV, LTSV, Parquet, Excel (.xlsx)
-- Support de la compression : gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst)
+- Support de la compression : gzip (.gz), bzip2 (.bz2), xz (.xz), zstd (.zst), zlib (.z), snappy (.snappy), s2 (.s2), lz4 (.lz4)
 - Liaison de colonnes par nom : Les champs correspondent automatiquement aux noms de colonnes en `snake_case`, personnalisable via la balise `name`
 - Prétraitement basé sur les balises struct (`prep`) : trim, lowercase, uppercase, valeurs par défaut
 - Validation basée sur les balises struct (`validate`) : required et plus
@@ -514,11 +514,24 @@ Plusieurs balises peuvent être combinées : `validate:"required,email"`
 
 | Format | Extension | Compressé |
 |--------|-----------|-----------|
-| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst` |
-| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst` |
-| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst` |
-| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst` |
-| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst` |
+| CSV | `.csv` | `.csv.gz`, `.csv.bz2`, `.csv.xz`, `.csv.zst`, `.csv.z`, `.csv.snappy`, `.csv.s2`, `.csv.lz4` |
+| TSV | `.tsv` | `.tsv.gz`, `.tsv.bz2`, `.tsv.xz`, `.tsv.zst`, `.tsv.z`, `.tsv.snappy`, `.tsv.s2`, `.tsv.lz4` |
+| LTSV | `.ltsv` | `.ltsv.gz`, `.ltsv.bz2`, `.ltsv.xz`, `.ltsv.zst`, `.ltsv.z`, `.ltsv.snappy`, `.ltsv.s2`, `.ltsv.lz4` |
+| Excel | `.xlsx` | `.xlsx.gz`, `.xlsx.bz2`, `.xlsx.xz`, `.xlsx.zst`, `.xlsx.z`, `.xlsx.snappy`, `.xlsx.s2`, `.xlsx.lz4` |
+| Parquet | `.parquet` | `.parquet.gz`, `.parquet.bz2`, `.parquet.xz`, `.parquet.zst`, `.parquet.z`, `.parquet.snappy`, `.parquet.s2`, `.parquet.lz4` |
+
+### Formats de Compression Supportés
+
+| Format | Extension | Description |
+|--------|-----------|-------------|
+| gzip | `.gz` | Compression GNU zip, largement utilisée |
+| bzip2 | `.bz2` | Compression par bloc avec excellent taux |
+| xz | `.xz` | Compression LZMA2 haute performance |
+| zstd | `.zst` | Compression Zstandard de Facebook |
+| zlib | `.z` | Compression DEFLATE standard |
+| snappy | `.snappy` | Compression rapide de Google |
+| s2 | `.s2` | Extension Snappy améliorée |
+| lz4 | `.lz4` | Compression extrêmement rapide |
 
 **Note sur la compression Parquet** : La compression externe (`.parquet.gz`, etc.) est pour le fichier conteneur lui-même. Les fichiers Parquet peuvent également utiliser une compression interne (Snappy, GZIP, LZ4, ZSTD) qui est gérée de manière transparente par la bibliothèque parquet-go.
 
@@ -646,7 +659,7 @@ fileprep charge le **fichier entier en mémoire** pour le traitement. Cela perme
 | 100-500 Mo | ~500 Mo - 1.5 Go | Surveiller la mémoire, considérer le fractionnement |
 | > 500 Mo | > 1.5 Go | Diviser les fichiers ou utiliser des alternatives en streaming |
 
-Pour les entrées compressées (gzip, bzip2, xz, zstd), l'utilisation mémoire est basée sur la taille **décompressée**.
+Pour les entrées compressées (gzip, bzip2, xz, zstd, zlib, snappy, s2, lz4), l'utilisation mémoire est basée sur la taille **décompressée**.
 
 ## Performance
 
